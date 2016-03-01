@@ -5,7 +5,6 @@ class Recipe(recipe.Recipe):
     name = 'gst-plugins-bad-1.0'
     version = '1.8'
     licenses = [License.LGPLv2Plus]
-    config_sh = 'sh ./autogen.sh --noconfigure && ./configure'
     configure_options = '--enable-static --disable-introspection --disable-gsm \
         --disable-examples --disable-festival \
         --disable-videomaxrate --disable-bz2 --disable-libde265 \
@@ -25,8 +24,11 @@ class Recipe(recipe.Recipe):
         --enable-hls --enable-rtmp --enable-srtp --enable-schro --enable-dts \
         --enable-libmms --enable-resindvd --enable-soundtouch \
         --enable-voaacenc --enable-rsvg --enable-openjpeg --enable-spandsp'
-    remotes = {'origin': 'git://anongit.freedesktop.org/gstreamer/gst-plugins-bad'}
-    commit = 'origin/1.8'
+    remotes = {'origin': 'git://anongit.freedesktop.org/gstreamer/{0}'.format(name[:-4]),
+               'centricular': 'https://github.com/centricular/{0}.git'.format(name[:-4])}
+    commit = 'centricular/meson'
+    stype = SourceType.GIT
+    btype = BuildType.MESON
     deps = ['gstreamer-1.0', 'gst-plugins-base-1.0', 'bzip2', 'libass',
             'faad2', 'libkate', 'zlib', 'openh264', 'opus', 'nettle', 'librtmp',
             'libsrtp', 'schroedinger', 'libdca', 'libmms', 'libdvdnav',

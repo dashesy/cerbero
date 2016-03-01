@@ -5,10 +5,12 @@ class Recipe(recipe.Recipe):
     name = 'gst-plugins-good-1.0'
     version = '1.8'
     licenses = [License.LGPLv2Plus]
-    config_sh = 'sh ./autogen.sh --noconfigure && ./configure'
     configure_options = '--disable-examples --disable-oss4 --disable-oss --disable-dv1394 --disable-aalib --disable-libcaca --disable-jack --disable-shout2 '
-    remotes = {'origin': 'git://anongit.freedesktop.org/gstreamer/gst-plugins-good'}
-    commit = 'origin/1.8'
+    remotes = {'origin': 'git://anongit.freedesktop.org/gstreamer/{0}'.format(name[:-4]),
+               'centricular': 'https://github.com/centricular/{0}.git'.format(name[:-4])}
+    commit = 'centricular/meson'
+    stype = SourceType.GIT
+    btype = BuildType.MESON
     deps = ['gstreamer-1.0', 'gst-plugins-base-1.0', 'libjpeg-turbo', 'libpng',
             'speex', 'gdk-pixbuf', 'libsoup',
             'orc', 'wavpack', 'flac', 'taglib', 'bzip2', 'zlib',
