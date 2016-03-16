@@ -75,6 +75,14 @@ class CustomBuild(Build):
         pass
 
 
+def append_path(var, path, sep=';'):
+    if var and not var.endswith(sep):
+        var += sep
+    if path and not path.endswith(sep):
+        path += sep
+    var += path
+    return var
+
 def modify_environment(func):
     ''' Decorator to modify the build environment '''
     def call(*args):
@@ -83,6 +91,24 @@ def modify_environment(func):
         new_env = self.new_env.copy()
         if self.use_system_libs and self.config.allow_system_libs:
             self._add_system_libs(new_env)
+        # We assume that if this recipe uses Meson, it can be built with MSVC
+        if self.btype == BuildType.MESON and self.config.variants.visualstudio:
+            # Unset variables pointing to the MinGW/GCC toolchain so that
+            # the MSVC toolchain is auto-detected instead.
+            if os.environ.has_key('CERBERO_MSVC_UNSET_VARS'):
+                for var in os.environ['CERBERO_MSVC_UNSET_VARS'].split():
+                    new_env[var] = None
+            # C_INCLUDE_PATH and LIBRARY_PATH allow gcc (and hence AC_CHECK_LIB
+            # etc) to find headers and libraries provided by Cerbero and the
+            # MinGW runtime installed by Cerbero. While building using MSVC
+            # with Meson, we don't want  to find libraries and headers provided
+            # by MinGW, but we do want to find  the ones provided by Cerbero.
+            # So we set INCLUDE and LIB to point to  prefix/lib and
+            # prefix/include.
+            os.environ['INCLUDE'] = append_path(os.environ.get('INCLUDE', ''),
+                os.path.join(self.config.prefix, 'include'))
+            os.environ['LIB'] = append_path(os.environ.get('LIB', ''),
+                os.path.join(self.config.prefix, 'lib' + self.config.lib_suffix))
         old_env = self._modify_env(append_env, new_env)
         res = func(*args)
         self._restore_env(old_env)
