@@ -34,6 +34,10 @@ class Recipe(recipe.Recipe):
                     os.path.join(data_dir,  'gtk-doc.notmpl.make'))
         gtkdocize = os.path.join(self.config.prefix, 'bin', 'gtkdocize')
         shutil.copy(os.path.join(self.build_dir, 'gtkdocize.in'), gtkdocize)
+        if self.config.platform == Platform.WINDOWS:
+            # For explanation, see glib.recipe
+            shutil.copy(os.path.join(self.build_dir, 'gtkdocize.in'),
+                        gtkdocize + '.sh')
         replacements = {'@PACKAGE@': 'gtk-doc', '@VERSION@': self.version,
                         '@prefix@': self.config.prefix,
                         '@datarootdir@': '${prefix}/share',
