@@ -1,0 +1,19 @@
+# -*- Mode: Python -*- vi:si:et:sw=4:sts=4:ts=4:syntax=python
+
+class Recipe(recipe.Recipe):
+    name = 'proxy-libintl'
+    version = '0.19'
+    licenses = [License.LGPLv2Plus]
+    remotes = {'centricular': 'https://github.com/centricular/{0}.git'.format(name)}
+    commit = 'centricular/master'
+    stype = SourceType.GIT
+    btype = BuildType.MESON
+
+    # Break circular dependency; there's no build-time dependency
+    runtime_dep = True
+    platform_deps = {
+        Platform.WINDOWS:  ['mingw-runtime'],
+    }
+
+    files_libs = ['libintl']
+    files_devel = ['include/libintl.h']

@@ -109,7 +109,16 @@ class Recipe(recipe.Recipe):
             # Hack to fix building of the glib/tests/private test
             self.make = '%s private_LDFLAGS=""' % self.make
         elif self.config.target_platform == Platform.WINDOWS:
-            self.configure_options += ' --with-libiconv=gnu'
+            self.configure_options += ' --with-libiconv=gnu '
+            # Our version of gettext is proxy-libintl which #define-s these
+            # symbols in the header file to other symbols, so configure can't
+            # detect these properly. Force configure to accept it.
+            self.configure_options += \
+                ' ac_cv_lib_intl_dgettext=yes' \
+                ' ac_cv_lib_intl_ngettext=yes' \
+                ' ac_cv_func_dcgettext=yes' \
+                ' ac_cv_func_bind_textdomain_codeset=yes' \
+                ' ac_cv_lib_intl_bindtextdomain=yes'
             self.append_env['CFLAGS'] = ' -DMINGW_HAS_SECURE_API=1 '
         elif self.config.target_platform in [Platform.DARWIN, Platform.IOS]:
             self.files_devel.append(os.path.join('lib', 'glib-2.0', 'include', '*', 'glibconfig.h'))
@@ -185,7 +194,7 @@ class Recipe(recipe.Recipe):
                 path1 = '/usr/lib/gio/modules/'
             elif self.config.target_distro == Distro.NONE:
                 if self.config.target_distro_version == DistroVersion.NONE_UCLIBC:
-                    self.deps += ('gettext', 'libiconv')
+                    self.deps += ('proxy-libintl', 'libiconv')
             else:
                 raise FatalError(_("Add specific for other Linux distributions here"))
             self._set_gio_flags(path1, path2, use_old_uri_scheme)

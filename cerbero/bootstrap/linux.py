@@ -43,7 +43,7 @@ class DebianBootstrapper (UnixBootstrapper):
     packages = ['autotools-dev', 'automake', 'autoconf', 'libtool', 'g++',
                 'autopoint', 'make', 'cmake', 'bison', 'flex', 'yasm',
                 'pkg-config', 'gtk-doc-tools', 'libxv-dev', 'libx11-dev',
-                'libpulse-dev', 'python-dev', 'texinfo', 'gettext',
+                'libpulse-dev', 'python-dev', 'texinfo',
                 'build-essential', 'pkg-config', 'doxygen', 'curl',
                 'libxext-dev', 'libxi-dev', 'x11proto-record-dev',
                 'libxrender-dev', 'libgl1-mesa-dev', 'libxfixes-dev',
@@ -84,7 +84,7 @@ class RedHatBootstrapper (UnixBootstrapper):
 
     tool = 'su -c "yum install %s"'
     packages = ['gcc', 'gcc-c++', 'automake', 'autoconf', 'libtool',
-                'gettext-devel', 'make', 'cmake', 'bison', 'flex', 'yasm',
+                'make', 'cmake', 'bison', 'flex', 'yasm',
                 'pkgconfig', 'gtk-doc', 'curl', 'doxygen', 'texinfo',
                 'texinfo-tex', 'texlive-dvips', 'docbook-style-xsl',
                 'transfig', 'intltool', 'rpm-build', 'redhat-rpm-config',
@@ -128,7 +128,7 @@ class ArchBootstrapper (UnixBootstrapper):
     tool = 'sudo pacman -S %s --needed'
     packages = ['intltool', 'cmake', 'doxygen', 'gtk-doc',
             'libtool', 'bison', 'flex', 'automake', 'autoconf', 'make',
-            'curl', 'gettext', 'alsa-lib', 'yasm', 'gperf',
+            'curl', 'alsa-lib', 'yasm', 'gperf',
             'docbook-xsl', 'transfig', 'libxrender',
             'libxv', 'mesa', 'python2', 'wget', 'glib-networking', 'git',
             'subversion', 'xorg-util-macros']
