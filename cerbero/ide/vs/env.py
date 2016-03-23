@@ -28,18 +28,18 @@ if not os.path.isfile(vcvarsall):
     raise FatalError("Microsoft Visual Studio 14.0 not found")
 
 def get_vcvarsall_arg(arch, target_arch):
+    if target_arch == Architecture.X86:
+        # If arch is x86_64, this will cause the WOW64 version of MSVC to be
+        # used, which is how most people compile 32-bit apps on 64-bit.
+        return 'x86'
     if arch == Architecture.X86:
-        if target_arch == Architecture.X86:
-            return 'x86'
-        elif target_arch == Architecture.X86_64:
+        if target_arch == Architecture.X86_64:
             return 'x86_amd64'
         elif target_arch.is_arm():
             return 'x86_arm'
     elif arch == Architecture.X86_64:
         if target_arch == Architecture.X86_64:
             return 'amd64'
-        elif target_arch == Architecture.X86:
-            return 'amd64_x86'
         elif target_arch.is_arm():
             return 'amd64_arm'
     elif arch.is_arm() and target_arch.is_arm():
