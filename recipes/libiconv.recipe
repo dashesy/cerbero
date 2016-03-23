@@ -14,7 +14,7 @@ class Recipe(recipe.Recipe):
                'libiconv/0004-lib-Only-rename-locale_charset-for-libiconv-not-libc.patch',]
 
     configure_options = '--disable-nls --enable-static'
-    platform_deps = {Platform.WINDOWS: ['proxy-libintl']}
+    platform_deps = {Platform.WINDOWS: ['gettext']}
     autoreconf_sh = './autogen.sh --skip-gnulib && autoreconf -fiv'
 
     files_bins = ['iconv', ]

@@ -24,13 +24,13 @@ class Package(package.Package):
              'libcroco:libs', 'librsvg:libs']
 
     platform_files = {
-        Platform.WINDOWS: ['proxy-libintl:libs:lang', 'libiconv:libs:lang',
+        Platform.WINDOWS: ['gettext:libs:lang', 'libiconv:libs:lang',
             'mingw-runtime', 'bionic-fixup:libs'],
-        Platform.DARWIN: ['proxy-libintl:libs:lang', 'bionic-fixup:libs'],
+        Platform.DARWIN: ['gettext:libs:lang', 'bionic-fixup:libs'],
         Platform.LINUX: [],
-        Platform.ANDROID: ['proxy-libintl:libs:lang', 'libiconv:libs:lang', 'gnustl',
+        Platform.ANDROID: ['gettext:libs:lang', 'libiconv:libs:lang', 'gnustl',
             'bionic-fixup:libs'],
-        Platform.IOS: ['proxy-libintl:libs:lang', 'bionic-fixup:libs']
+        Platform.IOS: ['gettext:libs:lang', 'bionic-fixup:libs']
         }
 
     def prepare(self):

@@ -34,8 +34,6 @@ class Recipe(recipe.Recipe):
     files_lang = ['gnutls']
 
     def prepare(self):
-        if self.config.target_platform != Platform.LINUX:
-            self.configure_options += ' --disable-nls'
         if self.config.target_platform == Platform.WINDOWS:
             self.configure_options += ' --enable-threads=win32'
             self.can_use_configure_cache = False
