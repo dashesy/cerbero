@@ -20,6 +20,7 @@ import os
 import subprocess
 
 from cerbero.config import Architecture
+from cerbero.errors import FatalError
 
 # We only support Visual Studio 2015 as of now
 vcvarsall = r'C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat'
