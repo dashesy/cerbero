@@ -23,9 +23,14 @@ from cerbero.config import Architecture
 from cerbero.errors import FatalError
 
 # We only support Visual Studio 2015 as of now
-vcvarsall = r'C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat'
+vcvarsall_14 = [r'C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat',
+                r'C:\Program Files\Microsoft Visual Studio 14.0\VC\vcvarsall.bat']
 
-if not os.path.isfile(vcvarsall):
+for vcvarsall in vcvarsall_14:
+    # Find the location of the Visual Studio installation
+    if os.path.isfile(vcvarsall):
+        break
+else:
     raise FatalError("Microsoft Visual Studio 14.0 not found")
 
 def get_vcvarsall_arg(arch, target_arch):
