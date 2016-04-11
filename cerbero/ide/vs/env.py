@@ -76,4 +76,4 @@ def set_msvc_env(env):
             os.environ[var] = value
     # Environment variables to unset while setting the build environment
     # inside build/build.py when using the MSVC compiler
-    os.environ['CERBERO_MSVC_UNSET_VARS'] = 'CC CXX AR LD CFLAGS CXXFLAGS OBJCFLAGS'
+    os.environ['CERBERO_MSVC_UNSET_VARS'] = 'CC CPP CXX AR LD STRIP CFLAGS CXXFLAGS OBJCFLAGS'

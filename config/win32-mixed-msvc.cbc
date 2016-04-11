@@ -2,7 +2,7 @@
 # Sets up an environment that allows recipes to choose whether they want to
 # build using MinGW/GCC or MSVC
 #
-# Please also edit win64_msvc.cbc when updating this file
+# Please also edit win64-mixed-msvc.cbc when updating this file
 
 from cerbero.config import Architecture
 from cerbero.ide.vs.env import vcvarsall, get_msvc_env, set_msvc_env
