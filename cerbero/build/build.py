@@ -398,6 +398,7 @@ c = '{CC}'
 cpp = '{CXX}'
 ar = '{AR}'
 strip = '{STRIP}'
+pkgconfig = 'pkg-config'
 '''
 
 # We derive from MakefilesBase even though we don't use make
