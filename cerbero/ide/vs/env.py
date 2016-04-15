@@ -33,6 +33,14 @@ for vcvarsall in vcvarsall_14:
 else:
     raise FatalError("Microsoft Visual Studio 14.0 not found")
 
+def append_path(var, path, sep=';'):
+    if var and not var.endswith(sep):
+        var += sep
+    if path and not path.endswith(sep):
+        path += sep
+    var += path
+    return var
+
 def get_vcvarsall_arg(arch, target_arch):
     if target_arch == Architecture.X86:
         # If arch is x86_64, this will cause the WOW64 version of MSVC to be
