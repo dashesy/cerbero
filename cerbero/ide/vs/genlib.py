@@ -47,7 +47,10 @@ class GenLib(object):
             libname = dllname.rsplit('.', 1)[0]
 
         defname = dllname.replace('.dll', '.def')
-        implib = '%s.lib' % libname[3:]
+        if libname.startswith('lib'):
+            implib = libname[3:] + '.lib'
+        else:
+            implib = libname + '.lib'
 
         # Create the import library
         vc_path = self._get_vc_tools_path()
@@ -99,6 +102,9 @@ class GenGnuLib(GenLib):
         # foo.dll
         libname = dllname.rsplit('.', 1)[0]
         defname = dllname.replace('.dll', '.def')
-        gnuimplib = 'lib{0}.dll.a'.format(libname)
+        if libname.startswith('lib'):
+            gnuimplib = libname + '.dll.a'
+        else:
+            gnuimplib = 'lib{0}.dll.a'.format(libname)
         shell.call(self.DLLTOOL_TPL % (defname, gnuimplib, dllname), outputdir)
         return os.path.join(outputdir, gnuimplib)

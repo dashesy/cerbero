@@ -24,6 +24,7 @@ import time
 
 from cerbero.build import build, source
 from cerbero.build.filesprovider import FilesProvider
+from cerbero.build.build import BuildType
 from cerbero.config import Platform
 from cerbero.errors import FatalError
 from cerbero.ide.vs.genlib import GenLib, GenGnuLib
@@ -217,21 +218,28 @@ class Recipe(FilesProvider):
         '''
         Generates library files (.lib) for the dll's provided by this recipe
         '''
-        if self.can_use_msvc_toolchain and self.config.variants.visualstudio:
-            # Generate a GNU import library; we already have an MSVC one
-            genlib = GenGnuLib()
+        if self.btype is BuildType.MESON:
+            if self.config.variants.visualstudio and \
+              self.can_use_msvc_toolchain:
+                # Generate a GNU import library; we already have an MSVC one
+                genlibs = [GenGnuLib()]
+            else:
+                # We have no import libraries; generate both MSVC and GNU
+                genlibs = [GenLib(), GenGnuLib()]
         else:
             # Generate an MSVC import library; we already have a GNU one
-            genlib = GenLib()
+            genlibs = [GenLib()]
+
         for dllpath in self.libraries():
-            try:
-                implib = genlib.create(
-                    os.path.join(self.config.prefix, dllpath),
-                    self.config.target_arch,
-                    os.path.join(self.config.prefix, 'lib'))
-                logging.debug('Created %s' % implib)
-            except:
-                m.warning("Could not create .lib, gendef might be missing")
+            for genlib in genlibs:
+                try:
+                    implib = genlib.create(
+                        os.path.join(self.config.prefix, dllpath),
+                        self.config.target_arch,
+                        os.path.join(self.config.prefix, 'lib'))
+                    logging.debug('Created %s' % implib)
+                except:
+                    m.warning("Could not create .lib, gendef might be missing")
 
     def recipe_dir(self):
         '''

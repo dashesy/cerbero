@@ -63,6 +63,12 @@ class FilesProvider(object):
                              self.TYPELIB_CAT: self._search_typelibfiles,
                              'default': self._search_files}
 
+    def needs_dll_name_fix(self):
+        if getattr(self, 'btype', None) is BuildType.MESON and \
+           self.config.platform == Platform.WINDOWS:
+            return True
+        return False
+
     def devel_files_list(self):
         '''
         Return the list of development files, which consists in the files and
@@ -203,8 +209,7 @@ class FilesProvider(object):
                     dlls.append(pattern % f)
             files = list(set(files) - set(dlls))
 
-        if getattr(self, 'can_use_msvc_toolchain', False) and \
-           self.config.variants.visualstudio:
+        if self.needs_dll_name_fix():
             # When generating a GNU import library from an MSVC DLL, the DLL
             # does not start with 'lib' and does not match *-*.dll.
             files = [f[3:] for f in files]
