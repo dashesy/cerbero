@@ -22,6 +22,7 @@ import inspect
 
 from cerbero.config import Platform
 from cerbero.utils import shell
+from cerbero.build.build import BuildType
 
 
 class FilesProvider(object):
@@ -201,6 +202,13 @@ class FilesProvider(object):
                 if os.path.exists(path):
                     dlls.append(pattern % f)
             files = list(set(files) - set(dlls))
+
+        if getattr(self, 'can_use_msvc_toolchain', False) and \
+           self.config.variants.visualstudio:
+            # When generating a GNU import library from an MSVC DLL, the DLL
+            # does not start with 'lib' and does not match *-*.dll.
+            files = [f[3:] for f in files]
+            self.extensions['sext'] = '*.dll'
 
         pattern = '%(sdir)s/%(file)s%(sext)s'
 
