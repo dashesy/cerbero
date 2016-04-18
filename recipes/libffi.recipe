@@ -3,18 +3,21 @@
 class Recipe(recipe.Recipe):
     name = 'libffi'
     version = '3.2.1'
-    autoreconf = True
     remotes = {'origin': 'https://github.com/atgreen/{0}.git'.format(name),
                'centricular': 'https://github.com/centricular/{0}.git'.format(name)}
+    commit = 'centricular/meson'
     licenses = [License.BSD_like]
     btype = BuildType.MESON
-    commit = 'centricular/meson'
 
     files_libs = ['libffi']
     files_devel = ['include/ffi.h', 'lib/pkgconfig/libffi.pc']
-    patches = ['libffi/0001-libffi-Don-t-be-smart-about-toolexeclibdir.patch']
 
     def prepare(self):
+        if self.config.target_platform == Platform.WINDOWS and \
+           self.config.target_arch == Architecture.X86_64:
+            # libffi is broken on 64-bit MSVC
+            self.can_use_msvc_toolchain = False
+
         if self.config.target_platform  in [Platform.DARWIN, Platform.IOS]:
             self.files_devel.append(os.path.join('include', '*', 'ffi.h'))
             self.files_devel.append(os.path.join('include', '*', 'ffitarget.h'))
