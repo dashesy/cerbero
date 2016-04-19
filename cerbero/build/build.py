@@ -393,10 +393,8 @@ class Meson (MakefilesBase):
     http://mesonbuild.com
 
     '''
-    config_sh = shell.which('meson') or None
     configure_tpl = '%(config-sh)s --prefix=%(prefix)s --libdir=%(libdir)s \
             --default-library=%(default-library)s ..'
-    make = shell.which('ninja-build') or shell.which('ninja') or None
     make_install = None
     make_check = None
     make_clean = None
@@ -415,10 +413,14 @@ class Meson (MakefilesBase):
 
     @modify_environment
     def configure(self):
+        # Find Meson
+        self.config_sh = shell.which('meson') or None
         if not self.config_sh:
-            raise FatalError("The 'meson' build system was not found")
+            raise Exception("The 'meson' build system was not found")
+        # Find ninja
+        self.make = shell.which('ninja-build') or shell.which('ninja') or None
         if not self.make:
-            raise FatalError("The 'ninja' build system was not found")
+            raise Exception("The 'ninja' build system was not found")
         if os.path.exists(self.make_dir):
             shutil.rmtree(self.make_dir)
         os.makedirs(self.make_dir)
