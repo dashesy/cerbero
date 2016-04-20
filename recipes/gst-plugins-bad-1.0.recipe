@@ -30,7 +30,7 @@ class Recipe(recipe.Recipe):
     stype = SourceType.GIT
     btype = BuildType.MESON
     deps = ['gstreamer-1.0', 'gst-plugins-base-1.0', 'bzip2', 'libass',
-            'faad2', 'libkate', 'zlib', 'openh264', 'opus', 'nettle', 'librtmp',
+            'faad2', 'libkate', 'zlib', 'openh264', 'opus', 'nettle', #FIXME:'librtmp',
             'libsrtp', 'schroedinger', 'libdca', 'libmms', 'libdvdnav',
             'soundtouch', 'vo-aacenc', 'librsvg', 'openjpeg', 'graphene', 'spandsp']
     use_system_libs = True
@@ -149,7 +149,7 @@ class Recipe(recipe.Recipe):
 
     files_plugins_net_restricted = [
              'lib/gstreamer-1.0/libgstmms%(mext)s',
-             'lib/gstreamer-1.0/libgstrtmp%(mext)s',
+             #FIXME'lib/gstreamer-1.0/libgstrtmp%(mext)s',
     ]
 
     files_plugins_capture = [

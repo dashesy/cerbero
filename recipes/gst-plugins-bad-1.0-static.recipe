@@ -21,7 +21,7 @@ class Recipe(custom.GStreamerStatic):
     remotes = {'origin': 'git://anongit.freedesktop.org/gstreamer/gst-plugins-bad'}
     commit = 'origin/1.8'
     deps = ['gstreamer-1.0', 'gst-plugins-base-1.0', 'bzip2', 'libass',
-            'faad2', 'libkate', 'zlib', 'openh264', 'opus', 'nettle', 'librtmp',
+            'faad2', 'libkate', 'zlib', 'openh264', 'opus', 'nettle', #FIXME'librtmp',
             'libsrtp', 'schroedinger', 'libdca', 'libmms', 'libdvdnav',
             'soundtouch', 'vo-aacenc', 'librsvg', 'openjpeg', 'graphene', 'spandsp']
     use_system_libs = True
@@ -115,7 +115,7 @@ class Recipe(custom.GStreamerStatic):
 
     files_plugins_net_restricted_devel = [
              'libgstmms',
-             'libgstrtmp',
+             #FIXME'libgstrtmp',
     ]
 
     files_plugins_capture_devel = [
