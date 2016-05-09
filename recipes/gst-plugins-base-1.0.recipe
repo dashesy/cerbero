@@ -143,4 +143,4 @@ class Recipe(recipe.Recipe):
             self.configure_options += ' --disable-alsa'
 
         if self.config.variants.nodebug:
-            self.append_env['CFLAGS'] += ' -DGST_LEVEL_MAX=GST_LEVEL_FIXME'
+            self.append_env['CFLAGS'] = ' -DGST_LEVEL_MAX=GST_LEVEL_FIXME'
