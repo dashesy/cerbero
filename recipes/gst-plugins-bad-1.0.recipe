@@ -38,21 +38,21 @@ class Recipe(recipe.Recipe):
     files_lang = ['gst-plugins-bad-1.0']
 
     files_libs = ['libgstcodecparsers-1.0', 'libgstmpegts-1.0', 'libgsturidownloader-1.0',
-                  'libgstbasecamerabinsrc-1.0', 'libgstphotography-1.0',
-                  'libgstgl-1.0', 'libgstbadbase-1.0', 'libgstbadvideo-1.0',
-                  'libgstinsertbin-1.0', 'libgstadaptivedemux-1.0',
-                  'libgstplayer-1.0', 'libgstbadbase-1.0',
+                  'libgstbasecamerabinsrc-1.0', 'libgstphotography-1.0', #'libgstgl-1.0',
+                  'libgstbadbase-1.0', 'libgstbadvideo-1.0', 'libgstinsertbin-1.0',
+                  'libgstadaptivedemux-1.0', 'libgstplayer-1.0', 'libgstbadbase-1.0',
                   'libgstbadaudio-1.0', 'libgstbadvideo-1.0']
 
     files_plugins_devel = [
-        'include/gstreamer-1.0/gst/gl',
-        'lib/gstreamer-1.0/include/gst/gl',
+        # The GL library is currently not built with Meson
+        #'include/gstreamer-1.0/gst/gl',
+        #'lib/gstreamer-1.0/include/gst/gl',
         'include/gstreamer-1.0/gst/mpegts',
         'include/gstreamer-1.0/gst/player',
         'include/gstreamer-1.0/gst/base',
         'include/gstreamer-1.0/gst/audio',
         'include/gstreamer-1.0/gst/video',
-        'lib/pkgconfig/gstreamer-gl-1.0.pc',
+        #'lib/pkgconfig/gstreamer-gl-1.0.pc',
         'lib/pkgconfig/gstreamer-mpegts-1.0.pc',
         'lib/pkgconfig/gstreamer-player-1.0.pc',
         'lib/pkgconfig/gstreamer-bad-base-1.0.pc',
@@ -173,32 +173,29 @@ class Recipe(recipe.Recipe):
             ]
 
     platform_files_plugins_sys = {
+             # FIXME: Meson doesn't build this yet
+             #'lib/gstreamer-1.0/libgstopengl%(mext)s',
         Platform.LINUX: [
              'lib/gstreamer-1.0/libgstshm%(mext)s',
-             'lib/gstreamer-1.0/libgstopengl%(mext)s',
              'lib/gstreamer-1.0/libgstdecklink%(mext)s',
             ],
         Platform.WINDOWS: [
              'lib/gstreamer-1.0/libgstd3dvideosink%(mext)s',
              'lib/gstreamer-1.0/libgstwasapi%(mext)s',
-             'lib/gstreamer-1.0/libgstopengl%(mext)s'
             ],
         Platform.DARWIN: [
              'lib/gstreamer-1.0/libgstapplemedia%(mext)s',
              'lib/gstreamer-1.0/libgstapplemedia_nonpublic%(mext)s',
              'lib/gstreamer-1.0/libgstshm%(mext)s',
-             'lib/gstreamer-1.0/libgstopengl%(mext)s',
              'lib/gstreamer-1.0/libgstdecklink%(mext)s',
             ],
         Platform.IOS: [
              'lib/gstreamer-1.0/libgstapplemedia%(mext)s',
              #'lib/gstreamer-1.0/libgstapplemedia_nonpublic%(mext)s',
              'lib/gstreamer-1.0/libgstshm%(mext)s',
-             'lib/gstreamer-1.0/libgstopengl%(mext)s'
             ],
         Platform.ANDROID: [
              'lib/gstreamer-1.0/libgstopensles%(mext)s',
-             'lib/gstreamer-1.0/libgstopengl%(mext)s'
             ]
     }
     files_typelibs = [
@@ -217,6 +214,11 @@ class Recipe(recipe.Recipe):
         if self.config.variants.gtk3:
             self.deps.append("gtk+3")
             self.files_plugins_sys = ["lib/gstreamer-1.0/libgstgtksink%(mext)s"]
+
+        if self.config.variants.visualstudio:
+            # Portability issues with MSVC
+            self.files_plugins_codecs.remove('lib/gstreamer-1.0/libgstspandsp%(mext)s')
+            self.files_plugins_effects.remove('lib/gstreamer-1.0/libgstsoundtouch%(mext)s')
 
         if self.config.target_platform != Platform.LINUX:
             self.configure_options += '--disable-gtk-doc '

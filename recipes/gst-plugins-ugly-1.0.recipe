@@ -45,5 +45,10 @@ class Recipe(recipe.Recipe):
                 self.deps.remove(d)
             self.files_plugins_dvd.remove('lib/gstreamer-1.0/libgstdvdread%(mext)s')
 
+        if self.config.variants.visualstudio:
+            # Cerbero is only installing a static library on Windows
+            # FIXME: Investigate this further
+            self.files_plugins_codecs_restricted.remove('lib/gstreamer-1.0/libgstmad%(mext)s')
+
         if self.config.variants.nodebug:
             self.append_env['CFLAGS'] = ' -DGST_LEVEL_MAX=GST_LEVEL_FIXME'
