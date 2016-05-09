@@ -73,12 +73,6 @@ class FilesProvider(object):
                              self.TYPELIB_CAT: self._search_typelibfiles,
                              'default': self._search_files}
 
-    def needs_dll_name_fix(self):
-        if getattr(self, 'btype', None) is BuildType.MESON and \
-           self.config.platform == Platform.WINDOWS:
-            return True
-        return False
-
     def devel_files_list(self):
         '''
         Return the list of development files, which consists in the files and
@@ -210,20 +204,20 @@ class FilesProvider(object):
             return []
 
         dlls = []
-        # on windows check libfoo.dll too instead of only libfoo-x.dll
+        # On windows check libfoo.dll & foo.dll too instead of only libfoo-x.dll
         if self.config.target_platform == Platform.WINDOWS:
             pattern = '%(sdir)s/%%s.dll' % self.extensions
             for f in files:
                 path = os.path.join(self.config.prefix, pattern % f)
                 if os.path.exists(path):
                     dlls.append(pattern % f)
+                else:
+                    # Library might also be called foo.dll if it was built with,
+                    # for instance, Meson
+                    path = os.path.join(self.config.prefix, pattern % f[3:])
+                    if os.path.exists(path):
+                        dlls.append(pattern % f[3:])
             files = list(set(files) - set(dlls))
-
-        if self.needs_dll_name_fix():
-            # When generating a GNU import library from an MSVC DLL, the DLL
-            # does not start with 'lib' and does not match *-*.dll.
-            files = [f[3:] for f in files]
-            self.extensions['sext'] = '*.dll'
 
         pattern = '%(sdir)s/%(file)s%(sext)s'
 
@@ -232,6 +226,7 @@ class FilesProvider(object):
             self.extensions['file'] = f
             libsmatch.append(pattern % self.extensions)
 
+        # TODO: Warn if number of items returned here != len(files)
         return shell.ls_files(libsmatch, self.config.prefix) + dlls
 
     def _pyfile_get_name(self, f):
@@ -348,9 +343,14 @@ class FilesProvider(object):
             if self.platform == Platform.LINUX:
                 pattern += 'lib/%(f)s.so '
             elif self.platform == Platform.WINDOWS:
+                # MinGW import library
                 pattern += 'lib/%(f)s.dll.a '
+                # Module definitions (symbols) file
                 pattern += 'lib/%(f)s.def '
+                # MSVC import library
                 pattern += 'lib/%(fnolib)s.lib '
+                # MSVC Program database (debugging symbols) file
+                pattern += 'lib/%(fnolib)s.pdb '
             elif self.platform in [Platform.DARWIN, Platform.IOS]:
                 pattern += 'lib/%(f)s.dylib '
 
