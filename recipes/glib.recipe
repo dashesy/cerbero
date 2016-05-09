@@ -25,7 +25,7 @@ class Recipe(recipe.Recipe):
     btype = BuildType.MESON
     #url = 'http://ftp.acc.umu.se/pub/GNOME/sources/glib/2.46/glib-%(version)s.tar.xz'
     remotes = {'centricular': 'https://github.com/centricular/{0}.git'.format(name)}
-    commit = 'centricular/meson'
+    commit = 'centricular/meson-1.8'
     licenses = [License.LGPLv2Plus]
     deps = ['libffi', 'zlib', 'gettext', 'libiconv']
     can_use_configure_cache = False

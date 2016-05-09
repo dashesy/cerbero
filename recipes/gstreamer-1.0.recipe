@@ -24,7 +24,7 @@ class Recipe(recipe.Recipe):
     configure_options = "--enable-static --program-prefix= --disable-examples "
     remotes = {'origin': 'git://anongit.freedesktop.org/gstreamer/{0}'.format(name[:-4]),
                'centricular': 'https://github.com/centricular/{0}.git'.format(name[:-4])}
-    commit = 'centricular/meson'
+    commit = 'centricular/meson-1.8'
     stype = SourceType.GIT
     btype = BuildType.MESON
     deps = ['glib', 'gtk-doc-lite']

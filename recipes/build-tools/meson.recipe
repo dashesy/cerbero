@@ -10,7 +10,7 @@ class Recipe(recipe.Recipe):
     btype = BuildType.CUSTOM
     remotes = {'origin': 'https://github.com/mesonbuild/meson.git',
                'centricular': 'https://github.com/centricular/meson.git'}
-    commit = 'centricular/gst-msvc'
+    commit = 'centricular/gst-msvc-1.8'
     deps = ['ninja']
 
     files_bin = ['bin/meson']

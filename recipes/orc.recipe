@@ -6,7 +6,7 @@ class Recipe(recipe.Recipe):
     version = '0.4.25.1'
     remotes = {'origin': 'git://anongit.freedesktop.org/gstreamer/{0}'.format(name),
                'centricular': 'https://github.com/centricular/{0}.git'.format(name)}
-    commit = 'centricular/meson'
+    commit = 'centricular/meson-1.8'
     stype = SourceType.GIT
     btype = BuildType.MESON
     licenses = [License.BSD_like]
