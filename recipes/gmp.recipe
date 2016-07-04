@@ -24,7 +24,6 @@ class Recipe(recipe.Recipe):
     stype = SourceType.TARBALL
     licenses = [License.LGPLv3Plus]
     tarball_dirname = 'gmp-6.1.0'
-    autoreconf = True
 
     files_libs = ['libgmp']
     files_devel = ['include/gmp.h']
@@ -39,7 +38,17 @@ class Recipe(recipe.Recipe):
             self.files_devel.append(os.path.join('include', '*', 'gmp.h'))
 
     def post_install(self):
-        if self.config.target_platform in [Platform.DARWIN, Platform.IOS]:
+        if self.config.target_platform == Platform.WINDOWS:
+            src = os.path.join(self.config.prefix, 'lib', 'libgmp-10.dll')
+            dll = os.path.join(self.config.prefix, 'bin', 'libgmp-10.dll')
+            dll_a = os.path.join(self.config.prefix, 'lib', 'libgmp.dll.a')
+            if os.path.exists(dll_a):
+                os.remove(dll_a)
+            shutil.copy(src, dll)
+            shutil.copy(src, dll_a)
+            gmp_la = os.path.join(self.config.prefix, 'lib', 'libgmp.la')
+            shell.replace(gmp_la, {'libgmp.lib': 'libgmp.dll.a'})
+        elif self.config.target_platform in [Platform.DARWIN, Platform.IOS]:
             # For the universal build we need to ship gmp.h of both
             # architectures in a subfolder and include the correct one depending
             # on the compiler architecture
