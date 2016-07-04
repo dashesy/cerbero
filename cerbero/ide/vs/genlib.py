@@ -17,6 +17,7 @@
 # Boston, MA 02111-1307, USA.
 
 import os
+import re
 
 from cerbero.config import Architecture
 from cerbero.utils import shell, to_unixpath
@@ -99,12 +100,9 @@ class GenGnuLib(GenLib):
 
         # Create the .def file
         shell.call('gendef ' + dllpath, outputdir)
-        # foo.dll
-        libname = dllname.rsplit('.', 1)[0]
         defname = dllname.replace('.dll', '.def')
-        if libname.startswith('lib'):
-            gnuimplib = libname + '.dll.a'
-        else:
-            gnuimplib = 'lib{0}.dll.a'.format(libname)
+        # foo.dll, libfoo.dll, libfoo-x.dll, foo-x.dll all need libfoo.dll.a
+        libname = re.match(r'(lib)?(.*?)(-[0-9]+)?\.dll', dllname).groups()[1]
+        gnuimplib = 'lib{0}.dll.a'.format(libname)
         shell.call(self.DLLTOOL_TPL % (defname, gnuimplib, dllname), outputdir)
         return os.path.join(outputdir, gnuimplib)
