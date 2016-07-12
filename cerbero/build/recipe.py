@@ -218,6 +218,9 @@ class Recipe(FilesProvider):
         '''
         Generates library files (.lib) for the dll's provided by this recipe
         '''
+        if output_dir is None:
+            output_dir = os.path.join(self.config.prefix,
+                                      'lib' + self.config.lib_suffix)
         if self.btype is BuildType.MESON and \
            self.can_use_msvc_toolchain and \
            self.config.variants.visualstudio:
@@ -232,7 +235,7 @@ class Recipe(FilesProvider):
                 implib = genlib.create(
                     os.path.join(self.config.prefix, dllpath),
                     self.config.target_arch,
-                    os.path.join(self.config.prefix, 'lib'))
+                    output_dir)
                 logging.debug('Created %s' % implib)
             except:
                 m.warning("Could not create .lib, gendef might be missing")

@@ -33,11 +33,8 @@ class GenLib(object):
     DLLTOOL_TPL = '$DLLTOOL -d %s -l %s -D %s'
     LIB_TPL = '%s /DEF:%s /OUT:%s /MACHINE:%s'
 
-    def create(self, dllpath, arch, outputdir=None):
-        bindir, dllname = os.path.split(dllpath)
-        if outputdir is None:
-            outputdir = bindir
-
+    def create(self, dllpath, arch, outputdir):
+        dllname = os.path.basename(dllpath)
         # Create the .def file
         shell.call('gendef %s' % dllpath, outputdir)
         if '-' in dllname:
@@ -93,11 +90,8 @@ class GenGnuLib(GenLib):
     works, we create a GNU-compatible import library which works.
     '''
 
-    def create(self, dllpath, arch, outputdir=None):
-        bindir, dllname = os.path.split(dllpath)
-        if outputdir is None:
-            outputdir = bindir
-
+    def create(self, dllpath, arch, outputdir):
+        dllname = os.path.basename(dllpath)
         # Create the .def file
         shell.call('gendef ' + dllpath, outputdir)
         defname = dllname.replace('.dll', '.def')
