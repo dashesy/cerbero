@@ -183,9 +183,12 @@ class FilesProvider(object):
                 # plugins and modules that are built with meson
                 f = f.replace('libgst', 'gst')
                 fs.append(f)
-                # HACK: Add pdb file with the DLL. This should go into the
-                # devel files list and the devel package.
-                fs.append(f.replace('.dll', '.pdb'))
+                # PDBs are only available when buildtype is not release
+                # FIXME: This should be done as part of devel-plugin search
+                if not self.config.variants.nodebug:
+                    # HACK: Add pdb file with the DLL. This should go into the
+                    # devel files list and the devel package.
+                    fs.append(f.replace('.dll', '.pdb'))
             else:
                 fs.append(f)
         # fill directories
