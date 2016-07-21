@@ -77,6 +77,7 @@ class Package(Command):
             ])
 
     def run(self, config, args):
+        self.ssp = None
         self.retry_once = args.retry_once
         set_buildtype(config, args.buildtype)
         self.store = PackagesStore(config)
