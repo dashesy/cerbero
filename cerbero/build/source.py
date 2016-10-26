@@ -122,12 +122,15 @@ class Tarball (Source):
             return
         m.action(_('Fetching tarball %s to %s') %
                  (self.url, self.download_path))
+        # Enable certificate checking Linux for now
+        # FIXME: Add more platforms here after testing
+        cc = self.config.platform == Platform.Linux
         try:
-            shell.download(self.url, self.download_path, check_cert=False,
+            shell.download(self.url, self.download_path, check_cert=cc,
                            overwrite=redownload)
         except FatalError:
             # Try our mirror
-            shell.download(self.mirror_url, self.download_path, check_cert=False,
+            shell.download(self.mirror_url, self.download_path, check_cert=cc,
                            overwrite=redownload)
 
     def extract(self):
