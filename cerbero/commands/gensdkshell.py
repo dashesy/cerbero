@@ -17,6 +17,7 @@
 # Boston, MA 02111-1307, USA.
 
 import os
+import six
 
 from cerbero.commands import Command, register_command
 from cerbero.errors import FatalError
@@ -108,7 +109,7 @@ class GenSdkShell(Command):
             self._putvar('GTK_DATA_PREFIX', prefix_env, None)
 
         envstr = 'export %s="%s"\n' % (prefix_env_name, prefix)
-        for e, v in env.iteritems():
+        for e, v in six.iteritems(env):
             envstr += 'export %s="%s"\n' % (e, v)
         try:
             filepath = os.path.join(output_dir, name)
@@ -119,7 +120,7 @@ class GenSdkShell(Command):
             with open(filepath, 'w+') as f:
                 f.write(SCRIPT_TPL % (envstr, cmd))
             shell.call("chmod +x %s" % filepath)
-        except IOError, ex:
+        except IOError as ex:
             raise FatalError(_("Error creating script: %s" % ex))
 
 

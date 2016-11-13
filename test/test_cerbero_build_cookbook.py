@@ -59,7 +59,7 @@ class PackageTest(unittest.TestCase):
         status = {'test': 'test'}
         self.cookbook.get_config().cache_file = tmp.name
         with open(tmp.name, 'wb') as f:
-            pickle.dump(status, f)
+            pickle.dump(status, f, protocol=2)
         self.cookbook._restore_cache()
         self.assertEquals(status, self.cookbook.status)
 

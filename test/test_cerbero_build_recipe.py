@@ -18,6 +18,7 @@
 
 import unittest
 import os
+import six
 
 from cerbero.build import recipe
 from cerbero.config import Platform, License, Architecture
@@ -62,9 +63,7 @@ class Recipe(recipe.Recipe):
     platform_licenses_test = {Platform.LINUX: [License.BSD]}
 
 
-class Class3(object):
-
-    __metaclass__ = recipe.MetaUniversalRecipe
+class Class3(six.with_metaclass(recipe.MetaUniversalRecipe, object)):
 
     def _do_step(self, name):
         return name

@@ -22,6 +22,7 @@ from cerbero.config import Platform, Architecture, Distro
 from cerbero.utils import shell, to_unixpath, add_system_libs
 from cerbero.utils import messages as m
 import shutil
+import six
 import re
 
 
@@ -87,7 +88,10 @@ def modify_environment(func):
         self._restore_env(old_env)
         return res
 
-    call.func_name = func.func_name
+    try:
+        call.func_name = func.func_name
+    except:
+        call.__name__ = func.__name__
     return call
 
 
@@ -172,16 +176,16 @@ class MakefilesBase (Build):
             return None
 
         self._old_env = {}
-        for var in append_env.keys() + new_env.keys():
+        for var in list(append_env.keys()) + list(new_env.keys()):
             self._old_env[var] = os.environ.get(var, None)
 
-        for var, val in append_env.iteritems():
-            if not os.environ.has_key(var):
+        for var, val in six.iteritems(append_env):
+            if var not in os.environ:
                 os.environ[var] = val
             else:
                 os.environ[var] = '%s %s' % (os.environ[var], val)
 
-        for var, val in new_env.iteritems():
+        for var, val in six.iteritems(new_env):
             if val is None:
                 if var in os.environ:
                     del os.environ[var]
@@ -194,7 +198,7 @@ class MakefilesBase (Build):
         if old_env is None:
             return
 
-        for var, val in old_env.iteritems():
+        for var, val in six.iteritems(old_env):
             if val is None:
                 if var in os.environ:
                     del os.environ[var]
@@ -264,7 +268,7 @@ class Autotools (MakefilesBase):
             # On windows, environment variables are upperscase, but we still
             # need to pass things like am_cv_python_platform in lowercase for
             # configure and autogen.sh
-            for k, v in os.environ.iteritems():
+            for k, v in six.iteritems(os.environ):
                 if k[2:6] == '_cv_':
                     self.configure_tpl += ' %s="%s"' % (k, v)
 

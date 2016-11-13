@@ -19,8 +19,8 @@
 import os
 import shutil
 import tarfile
-import urllib
-import urlparse
+import six.moves.urllib.parse as urlparse
+import six
 
 from cerbero.config import Platform
 from cerbero.utils import git, svn, shell, _
@@ -105,7 +105,7 @@ class Tarball (Source):
         self.download_path = os.path.join(self.repo_dir, self.tarball_name)
         # URL-encode spaces and other special characters in the URL's path
         split = list(urlparse.urlsplit(self.url))
-        split[2] = urllib.quote(split[2])
+        split[2] = urlparse.quote(split[2])
         self.url = urlparse.urlunsplit(split)
         self.mirror_url = urlparse.urljoin(TARBALL_MIRROR, self.tarball_name)
 
@@ -180,18 +180,18 @@ class GitCache (Source):
         # First try to get the sources from the cached dir if there is one
         cached_dir = os.path.join(self.config.cached_sources,  self.name)
         if os.path.isdir(os.path.join(cached_dir, ".git")):
-            for remote, url in self.remotes.iteritems():
+            for remote, url in six.iteritems(self.remotes):
                 git.add_remote(self.repo_dir, remote, "file://" + cached_dir)
-            for remote, url in self.config.recipe_remotes(self.name).iteritems():
+            for remote, url in six.iteritems(self.config.recipe_remotes(self.name)):
                 git.add_remote(self.repo_dir, remote, "file://" + cached_dir)
             git.fetch(self.repo_dir, fail=False)
         else:
             cached_dir = None
             # add remotes from both upstream and config so user can easily
             # cherry-pick patches between branches
-            for remote, url in self.remotes.iteritems():
+            for remote, url in six.iteritems(self.remotes):
                 git.add_remote(self.repo_dir, remote, url)
-            for remote, url in self.config.recipe_remotes(self.name).iteritems():
+            for remote, url in six.iteritems(self.config.recipe_remotes(self.name)):
                 git.add_remote(self.repo_dir, remote, url)
             # fetch remote branches
             git.fetch(self.repo_dir, fail=False)

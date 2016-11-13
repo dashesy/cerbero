@@ -18,6 +18,7 @@
 # Boston, MA 02111-1307, USA.
 
 import os
+import six
 
 from cerbero.config import DEFAULT_PACKAGER
 from cerbero.errors import EmptyPackageError
@@ -169,8 +170,8 @@ class LinuxPackager(PackagerBase):
         licenses = []
         recipes_licenses = self.package.recipes_licenses()
         recipes_licenses.update(self.package.devel_recipes_licenses())
-        for recipe_name, categories_licenses in recipes_licenses.iteritems():
-            for category_licenses in categories_licenses.itervalues():
+        for recipe_name, categories_licenses in six.iteritems(recipes_licenses):
+            for category_licenses in six.itervalues(categories_licenses):
                 licenses.extend(category_licenses)
         return sorted(list(set(licenses)))
 

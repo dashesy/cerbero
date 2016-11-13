@@ -1,4 +1,5 @@
 # -*- Mode: Python -*- vi:si:et:sw=4:sts=4:ts=4:syntax=python
+import six
 from collections import defaultdict
 from cerbero.utils import shell
 from custom import list_gstreamer_1_0_plugins_by_category
@@ -33,7 +34,7 @@ class Recipe(recipe.Recipe):
         decls = []
         regs = []
         categories = ''
-        for c, ps in plugins.iteritems():
+        for c, ps in six.iteritems(plugins):
             c = c.upper()
             define = DEFINE_TPL % c
             # By default enable only the core plugins

@@ -146,5 +146,5 @@ setup(
     ],
     cmdclass = {
         'sdist' : extended_sdist
-    }
+    }, install_requires=['six']
 )

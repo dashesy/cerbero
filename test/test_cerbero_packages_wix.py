@@ -17,7 +17,10 @@
 # Boston, MA 02111-1307, USA.
 
 import unittest
-import StringIO
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 
 from cerbero import hacks
 from cerbero.build import recipe
@@ -180,9 +183,9 @@ class MergeModuleTest(unittest.TestCase):
         str2 = str2.split('\n')
         for i in range(len(str1)):
             if str1[i] != str2[i]:
-                print str1[i]
-                print str2[i]
-                print ""
+                print(str1[i])
+                print(str2[i])
+                print("")
 
 
 class InstallerTest(unittest.TestCase):

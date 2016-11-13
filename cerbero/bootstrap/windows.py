@@ -46,6 +46,7 @@ class WindowsBootstrapper(BootstrapperBase):
     '''
 
     def start(self):
+        # Why is this needed? most users will not push, but it is annoying to have them change policy settings
         if not git.check_line_endings(self.config.platform):
             raise ConfigurationError("git is configured to use automatic line "
                     "endings conversion. You can fix it running:\n"
@@ -176,7 +177,7 @@ class WindowsBootstrapper(BootstrapperBase):
             # get the path
             libdir = libdir.split('=')[1]
             # strip the surrounding quotes
-            print "Replacing old libdir : ", libdir
+            print("Replacing old libdir : %s" % libdir)
             return libdir.strip()[1:-1]
 
     def remove_mingw_cpp(self):

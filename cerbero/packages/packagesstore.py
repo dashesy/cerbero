@@ -18,6 +18,7 @@
 
 import os
 import imp
+import six
 from collections import defaultdict
 
 from cerbero.build.cookbook import CookBook
@@ -27,6 +28,7 @@ from cerbero.packages import package, PackageType
 from cerbero.errors import FatalError, PackageNotFoundError
 from cerbero.utils import _, shell, remove_list_duplicates
 from cerbero.utils import messages as m
+from cerbero.utils import exec_file
 
 
 class PackagesStore (object):
@@ -58,7 +60,7 @@ class PackagesStore (object):
         @return: list of packages
         @rtype: list
         '''
-        packages = self._packages.values()
+        packages = list(self._packages.values())
         packages.sort(key=lambda x: x.name)
         return packages
 
@@ -161,7 +163,7 @@ class PackagesStore (object):
         self._packages = {}
         packages = defaultdict(dict)
         repos = self._config.get_packages_repos()
-        for reponame, (repodir, priority) in repos.iteritems():
+        for reponame, (repodir, priority) in six.iteritems(repos):
             packages[int(priority)].update(
                     self._load_packages_from_dir(repodir))
         # Add recipes by asceding pripority
@@ -177,7 +179,7 @@ class PackagesStore (object):
             m_path = os.path.join(repo, 'custom.py')
             if os.path.exists(m_path):
                 custom = imp.load_source('custom', m_path)
-        except Exception, ex:
+        except Exception as ex:
             # import traceback
             # traceback.print_exc()
             # m.warning("Error loading package %s" % ex)
@@ -200,7 +202,7 @@ class PackagesStore (object):
                  'Distro': Distro, 'DistroVersion': DistroVersion,
                  'License': License, 'package': package,
                  'PackageType': PackageType, 'custom': custom}
-            execfile(filepath, d)
+            exec_file(filepath, d)
             if 'Package' in d:
                 p = d['Package'](self._config, self, self.cookbook)
             elif 'SDKPackage' in d:
@@ -217,7 +219,7 @@ class PackagesStore (object):
             # may have changed it
             p.load_files()
             return p
-        except Exception, ex:
+        except Exception as ex:
             import traceback
             traceback.print_exc()
             m.warning("Error loading package %s" % ex)

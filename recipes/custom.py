@@ -10,15 +10,18 @@ from cerbero.config import Platform
 from cerbero.enums import License
 from cerbero.utils import shell, to_unixpath
 
-class GStreamerBase:
+
+class GStreamerBase(object):
 
     licenses = [License.LGPLv2Plus]
     version = '1.11'
     commit = 'origin/master'
 
+
 class GStreamer(GStreamerBase, recipe.Recipe):
 
     pass
+
 
 class GStreamerStatic(GStreamerBase, recipe.Recipe):
 

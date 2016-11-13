@@ -19,6 +19,7 @@
 import os
 import shutil
 import tempfile
+from functools import reduce
 
 from cerbero.config import Architecture
 from cerbero.errors import FatalError, EmptyPackageError
