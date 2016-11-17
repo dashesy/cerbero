@@ -29,6 +29,7 @@ import glob
 import shutil
 import hashlib
 import six
+import re
 
 from cerbero.enums import Platform
 from cerbero.utils import _, system_info, to_unixpath
@@ -410,6 +411,77 @@ def file_hash(path):
     return hashlib.md5(open(path, 'rb').read()).digest()
 
 
+def _parse_df(lines):
+    '''
+    Parse df command and update mounts
+    '''
+    pattern = re.compile(r"(?P<dir>[\w/\s\-_:\\]+)\s+([\d.]+?[GKM]|\d+)"
+                         "\s+([\d.]+[GKM]|\d+)\s+([\d.]+[GKM]|\d+)\s+"
+                         "(\d+%)\s+(?P<mount>.*)")
+    mounts = {}
+    for line in lines[1:]:
+        match = re.match(pattern, line)
+        mount = match.group('mount')
+        if mount in mounts:
+            continue
+        mounts[mount] = match.group('dir').strip()
+    return mounts
+
+
+def _parse_mount(lines):
+    '''
+    Parse mount command and update mounts
+    '''
+
+    mounts = {}
+    pattern = re.compile(r"(?P<mount>[\w/\s\-_:]+) on (?P<dir>[\w/\s\-_:\\]+)(,| type ).*")
+    for line in lines:
+        match = re.match(pattern, line)
+        mount = match.group('mount')
+        if mount in mounts:
+            continue
+        mounts[mount] = match.group('dir').strip()
+    return mounts
+
+
+def get_mount_points(df='df', mount='mount'):
+    '''
+    Get mount points
+    '''
+    mounts = {}
+    # noinspection PyBroadException
+    try:
+        mounts = _parse_df(check_call(df).splitlines())
+    except Exception:
+        pass
+
+    # noinspection PyBroadException
+    try:
+        mounts.update(_parse_mount(check_call(mount).splitlines()))
+    except Exception:
+        pass
+
+    return mounts
+
+
+def path_resolve_mount(path, mounts):
+    '''
+    Resolve path to where it is mounted
+    '''
+    roots = list(mounts.keys())
+    roots.sort(key=len, reverse=True)
+    for root in roots:
+        if not path.startswith(root):
+            continue
+        mounted = mounts[root]
+        if not os.path.isabs(mounted):
+            # ignore special mount points
+            return path
+        return os.path.normpath(os.path.join(mounted, './' + path[len(root):]))
+
+    return path
+
+
 def enter_build_environment(platform, arch, sourcedir=None):
     '''
     Enters to a new shell with the build environment
@@ -421,27 +493,31 @@ fi
 PS1='\[\033[01;32m\][cerbero-%s-%s]\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
 '''
 
-    bashrc = tempfile.NamedTemporaryFile()
-    bashrc.write(BASHRC % (platform, arch))
-    bashrc.flush()
-
     if sourcedir:
         os.chdir(sourcedir)
 
+    shell = os.environ.get('SHELL', '/bin/bash')
     if PLATFORM == Platform.WINDOWS:
-        # $MINGW_PREFIX/home/username
-        msys = os.path.join(os.path.expanduser('~'),
-                            '..', '..', 'msys.bat')
-        subprocess.check_call('%s -noxvrt' % msys)
-    else:
-        shell = os.environ.get('SHELL', '/bin/bash')
-        if os.system("%s --rcfile %s -c echo 'test' > /dev/null 2>&1" % (shell, bashrc.name)) == 0:
-            os.execlp(shell, shell, '--rcfile', bashrc.name)
+        # if shell is not in NT form (e.g. /bin/sh)
+        if '\\' not in shell:
+            # We are running from msys shell
+            # HOME is already set, no need to run bat file
+            shell = path_resolve_mount(shell, get_mount_points())
+        shell = os.path.normcase(shell)
+
+    with tempfile.NamedTemporaryFile(mode='w+') as bashrc:
+        bashrc.write(BASHRC % (platform, arch))
+        bashrc.flush()
+
+        if os.system("\"%s\" --rcfile %s -c echo 'test' > %s 2>&1" % (shell, bashrc.name, os.devnull)) == 0:
+            if PLATFORM == Platform.WINDOWS:
+                os.system("\"%s\" --rcfile %s" % (shell, bashrc.name))
+            else:
+                os.execlp(shell, shell, '--rcfile', bashrc.name)
         else:
             os.environ["CERBERO_ENV"] = "[cerbero-%s-%s]" % (platform, arch)
             os.execlp(shell, shell)
 
-    bashrc.close()
 
 def which(pgm, path=None):
     if path is None:
