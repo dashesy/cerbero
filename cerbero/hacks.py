@@ -91,18 +91,25 @@ class _Environ(environclass):
             self.data[k] = v
 
     def __setitem__(self, key, item):
-        os.putenv(key, item)
+        super(_Environ, self).__setitem__(key, item)
         self.data[key] = item
 
     def __getitem__(self, key):
-        return self.data[key]
+        return self.data.get(key, super(_Environ, self).__getitem__(key))
 
     def __delitem__(self, key):
-        os.putenv(key, '')
+        super(_Environ, self).__delitem__(key)
         del self.data[key]
 
+    def __iter__(self):
+        for key in self.data:
+            yield key
+        for key in super(_Environ, self).__iter__():
+            if key not in self.data:
+                yield key
+
     def pop(self, key, *args):
-        os.putenv(key, '')
+        super(_Environ, self).__delitem__(key)
         return self.data.pop(key, *args)
 
     def has_key(self, key):
