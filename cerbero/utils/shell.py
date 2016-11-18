@@ -416,7 +416,7 @@ def _parse_df(cmd='df'):
     Parse df command and update mounts
     '''
     lines = check_call(cmd).splitlines()
-    pattern = re.compile(r"(?P<dir>[\w/\-_\\][\w/\s\-_:\\]+)\s+([\d.]+?[GKM]|\d+)"
+    pattern = re.compile(r"(?P<dir>[\w/\-_\\][\w/\s\-_:\\.]+)\s+([\d.]+?[GKM]|\d+)"
                          "\s+([\d.]+[GKM]|\d+)\s+([\d.]+[GKM]|\d+)\s+"
                          "(\d+%)\s+(?P<mount>.*)")
     mounts = {}
@@ -518,7 +518,7 @@ PS1='\[\033[01;32m\][cerbero-%s-%s]\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ 
 
         if os.system("\"%s\" --rcfile %s -c echo 'test' > %s 2>&1" % (shell, bashrc.name, os.devnull)) == 0:
             if PLATFORM == Platform.WINDOWS:
-                os.system("\"%s\" --rcfile %s" % (shell, bashrc.name))
+                subprocess.check_call("\"%s\" --rcfile %s" % (shell, bashrc.name))
             else:
                 os.execlp(shell, shell, '--rcfile', bashrc.name)
         else:
