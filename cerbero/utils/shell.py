@@ -411,35 +411,42 @@ def file_hash(path):
     return hashlib.md5(open(path, 'rb').read()).digest()
 
 
-def _parse_df(lines):
+def _parse_df(cmd='df'):
     '''
     Parse df command and update mounts
     '''
-    pattern = re.compile(r"(?P<dir>[\w/\s\-_:\\]+)\s+([\d.]+?[GKM]|\d+)"
+    lines = check_call(cmd).splitlines()
+    pattern = re.compile(r"(?P<dir>[\w/\-_\\][\w/\s\-_:\\]+)\s+([\d.]+?[GKM]|\d+)"
                          "\s+([\d.]+[GKM]|\d+)\s+([\d.]+[GKM]|\d+)\s+"
                          "(\d+%)\s+(?P<mount>.*)")
     mounts = {}
+    prev_line = None
     for line in lines[1:]:
         match = re.match(pattern, line)
+        # lines could broken
+        if not match:
+            if prev_line:
+                match = re.match(pattern, prev_line + " " + line)
+                prev_line = None
+            else:
+                prev_line = line
+                continue
         mount = match.group('mount')
-        if mount in mounts:
-            continue
         mounts[mount] = match.group('dir').strip()
     return mounts
 
 
-def _parse_mount(lines):
+def _parse_mount(cmd='mount'):
     '''
     Parse mount command and update mounts
     '''
 
     mounts = {}
     pattern = re.compile(r"(?P<mount>[\w/\s\-_:]+) on (?P<dir>[\w/\s\-_:\\]+)(,| type ).*")
+    lines = check_call(cmd).splitlines()
     for line in lines:
         match = re.match(pattern, line)
         mount = match.group('mount')
-        if mount in mounts:
-            continue
         mounts[mount] = match.group('dir').strip()
     return mounts
 
@@ -451,13 +458,13 @@ def get_mount_points(df='df', mount='mount'):
     mounts = {}
     # noinspection PyBroadException
     try:
-        mounts = _parse_df(check_call(df).splitlines())
+        mounts = _parse_df(cmd=df)
     except Exception:
         pass
 
     # noinspection PyBroadException
     try:
-        mounts.update(_parse_mount(check_call(mount).splitlines()))
+        mounts.update(_parse_mount(cmd=mount))
     except Exception:
         pass
 
@@ -491,7 +498,7 @@ if [ -e ~/.bashrc ]; then
 source ~/.bashrc
 fi
 PS1='\[\033[01;32m\][cerbero-%s-%s]\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
-'''
+''' % (platform, arch)
 
     if sourcedir:
         os.chdir(sourcedir)
@@ -506,7 +513,7 @@ PS1='\[\033[01;32m\][cerbero-%s-%s]\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ 
         shell = os.path.normcase(shell)
 
     with tempfile.NamedTemporaryFile(mode='w+') as bashrc:
-        bashrc.write(BASHRC % (platform, arch))
+        bashrc.write(BASHRC)
         bashrc.flush()
 
         if os.system("\"%s\" --rcfile %s -c echo 'test' > %s 2>&1" % (shell, bashrc.name, os.devnull)) == 0:
