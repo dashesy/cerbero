@@ -17,6 +17,7 @@
 # Boston, MA 02111-1307, USA.
 
 
+import six
 from cerbero.utils import shell
 
 
@@ -54,7 +55,7 @@ class PackageBuild(object):
 
     def _cmd_with_args(self, args, output):
         args_str = ''
-        for k, v in args.iteritems():
+        for k, v in six.iteritems(args):
             args_str += " --%s '%s'" % (k, v)
         return '%s %s %s' % (self.CMD, args_str, output)
 

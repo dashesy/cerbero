@@ -124,7 +124,7 @@ class PackageTest(unittest.TestCase):
             package_file.write(x)
             package_file.flush()
             p = self.store._load_package_from_file(package_file.name)
-            print p, type(p)
+            print(p, type(p))
             self.assertIsInstance(p, t)
             self.assertEquals('test-package', p.name)
 
@@ -136,5 +136,5 @@ class PackageTest(unittest.TestCase):
         self.assertIsInstance(p, Package)
         try:
             p.test_imports()
-        except ImportError, e:
+        except ImportError as e:
             self.fail("Import error raised, %s", e)

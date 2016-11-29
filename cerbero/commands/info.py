@@ -16,6 +16,8 @@
 # Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 # Boston, MA 02111-1307, USA.
 
+import six
+
 from cerbero.commands import Command, register_command
 from cerbero.utils import _, N_, ArgparseArgument
 from cerbero.utils import messages as m
@@ -58,8 +60,8 @@ class PackageInfo(Command):
                 recipes_licenses = p.recipes_licenses()
                 recipes_licenses.update(p.devel_recipes_licenses())
                 for recipe_name, categories_licenses in \
-                        recipes_licenses.iteritems():
-                    for category_licenses in categories_licenses.itervalues():
+                        six.iteritems(recipes_licenses):
+                    for category_licenses in six.itervalues(categories_licenses):
                         licenses.extend(category_licenses)
             licenses = sorted(list(set(licenses)))
             d = {'name': p.name, 'version': p.version, 'url': p.url,

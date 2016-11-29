@@ -28,6 +28,8 @@ import time
 import glob
 import shutil
 import hashlib
+import six
+import re
 
 from cerbero.enums import Platform
 from cerbero.utils import _, system_info, to_unixpath
@@ -74,7 +76,7 @@ def close_logfile_output(dump=False):
         while True:
             data = LOGFILE.read()
             if data:
-                print data
+                print(data)
             else:
                 break
     # if logfile is empty, remove it
@@ -167,6 +169,10 @@ def check_call(cmd, cmd_dir=None, shell=False, split=True, fail=False):
             raise Exception()
     except Exception:
         raise FatalError(_("Error running command: %s") % cmd)
+
+    if sys.stdout.encoding:
+        output = output.decode(sys.stdout.encoding)
+
     return output
 
 
@@ -245,7 +251,7 @@ def download(url, destination=None, recursive=False, check_cert=True, overwrite=
             logging.info("Downloading %s", url)
         try:
             call(cmd, path)
-        except FatalError, e:
+        except FatalError as e:
             if os.path.exists(destination):
                 os.remove(destination)
             raise e
@@ -283,7 +289,7 @@ def download_curl(url, destination=None, recursive=False, check_cert=True, overw
         logging.info("Downloading %s", url)
         try:
             call(cmd, path)
-        except FatalError, e:
+        except FatalError as e:
             os.remove(destination)
             raise e
 
@@ -343,7 +349,7 @@ def replace(filepath, replacements):
     ''' Replaces keys in the 'replacements' dict with their values in file '''
     with open(filepath, 'r') as f:
         content = f.read()
-    for k, v in replacements.iteritems():
+    for k, v in six.iteritems(replacements):
         content = content.replace(k, v)
     with open(filepath, 'w+') as f:
         f.write(content)
@@ -357,9 +363,9 @@ def prompt(message, options=[]):
     ''' Prompts the user for input with the message and options '''
     if len(options) != 0:
         message = "%s [%s] " % (message, '/'.join(options))
-    res = raw_input(message)
+    res = six.moves.input(message)
     while res not in [str(x) for x in options]:
-        res = raw_input(message)
+        res = six.moves.input(message)
     return res
 
 
@@ -368,9 +374,9 @@ def prompt_multiple(message, options):
     output = message + '\n'
     for i in range(len(options)):
         output += "[%s] %s\n" % (i, options[i])
-    res = raw_input(output)
+    res = six.moves.input(output)
     while res not in [str(x) for x in range(len(options))]:
-        res = raw_input(output)
+        res = six.moves.input(output)
     return options[int(res)]
 
 
@@ -405,6 +411,84 @@ def file_hash(path):
     return hashlib.md5(open(path, 'rb').read()).digest()
 
 
+def _parse_df(cmd='df'):
+    '''
+    Parse df command and update mounts
+    '''
+    lines = check_call(cmd).splitlines()
+    pattern = re.compile(r"(?P<dir>[\w/\-_\\][\w/\s\-_:\\.]+)\s+([\d.]+?[GKM]|\d+)"
+                         "\s+([\d.]+[GKM]|\d+)\s+([\d.]+[GKM]|\d+)\s+"
+                         "(\d+%)\s+(?P<mount>.*)")
+    mounts = {}
+    prev_line = None
+    for line in lines[1:]:
+        match = re.match(pattern, line)
+        # lines could broken
+        if not match:
+            if prev_line:
+                match = re.match(pattern, prev_line + " " + line)
+                prev_line = None
+            else:
+                prev_line = line
+                continue
+        mount = match.group('mount')
+        mounts[mount] = match.group('dir').strip()
+    return mounts
+
+
+def _parse_mount(cmd='mount'):
+    '''
+    Parse mount command and update mounts
+    '''
+
+    mounts = {}
+    pattern = re.compile(r"(?P<mount>[\w/\s\-_:]+) on (?P<dir>[\w/\s\-_:\\]+)(,| type ).*")
+    lines = check_call(cmd).splitlines()
+    for line in lines:
+        match = re.match(pattern, line)
+        mount = match.group('mount')
+        mounts[mount] = match.group('dir').strip()
+    return mounts
+
+
+def get_mount_points(df='df', mount='mount'):
+    '''
+    Get mount points
+    '''
+    mounts = {}
+    # noinspection PyBroadException
+    try:
+        mounts = _parse_df(cmd=df)
+    except Exception:
+        pass
+
+    # noinspection PyBroadException
+    try:
+        mounts.update(_parse_mount(cmd=mount))
+    except Exception:
+        pass
+
+    return mounts
+
+
+def path_resolve_mount(path, mounts):
+    '''
+    Resolve path to where it is mounted
+    '''
+    roots = list(mounts.keys())
+    roots.sort(key=len, reverse=True)
+    for root in roots:
+        if not path.startswith(root):
+            continue
+        mounted = mounts[root]
+        if not os.path.isabs(mounted):
+            # ignore special mount points
+            return path
+        return os.path.normpath(os.path.join(mounted, './' + path[len(root):]))
+
+    return path
+
+
 def enter_build_environment(platform, arch, sourcedir=None):
     '''
     Enters to a new shell with the build environment
@@ -414,29 +498,33 @@ if [ -e ~/.bashrc ]; then
 source ~/.bashrc
 fi
 PS1='\[\033[01;32m\][cerbero-%s-%s]\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
-'''
-
-    bashrc = tempfile.NamedTemporaryFile()
-    bashrc.write(BASHRC % (platform, arch))
-    bashrc.flush()
+''' % (platform, arch)
 
     if sourcedir:
         os.chdir(sourcedir)
 
+    shell = os.environ.get('SHELL', '/bin/bash')
     if PLATFORM == Platform.WINDOWS:
-        # $MINGW_PREFIX/home/username
-        msys = os.path.join(os.path.expanduser('~'),
-                            '..', '..', 'msys.bat')
-        subprocess.check_call('%s -noxvrt' % msys)
-    else:
-        shell = os.environ.get('SHELL', '/bin/bash')
-        if os.system("%s --rcfile %s -c echo 'test' > /dev/null 2>&1" % (shell, bashrc.name)) == 0:
-            os.execlp(shell, shell, '--rcfile', bashrc.name)
+        # if shell is not in NT form (e.g. /bin/sh)
+        if '\\' not in shell:
+            # We are running from msys shell
+            # HOME is already set, no need to run bat file
+            shell = path_resolve_mount(shell, get_mount_points())
+        shell = os.path.normcase(shell)
+
+    with tempfile.NamedTemporaryFile(mode='w+') as bashrc:
+        bashrc.write(BASHRC)
+        bashrc.flush()
+
+        if os.system("\"%s\" --rcfile %s -c echo 'test' > %s 2>&1" % (shell, bashrc.name, os.devnull)) == 0:
+            if PLATFORM == Platform.WINDOWS:
+                subprocess.check_call("\"%s\" --rcfile %s" % (shell, bashrc.name))
+            else:
+                os.execlp(shell, shell, '--rcfile', bashrc.name)
         else:
             os.environ["CERBERO_ENV"] = "[cerbero-%s-%s]" % (platform, arch)
             os.execlp(shell, shell)
 
-    bashrc.close()
 
 def which(pgm, path=None):
     if path is None:

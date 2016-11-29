@@ -19,6 +19,7 @@
 import os
 import uuid
 import shutil
+import six
 
 from cerbero.utils import etree, to_winepath, shell
 from cerbero.errors import FatalError
@@ -393,7 +394,7 @@ class MSI(WixBase):
                                        required_packages)
 
         # Add a merge module ref for all the packages
-        for package, path in self.packages_deps.iteritems():
+        for package, path in six.iteritems(self.packages_deps):
             etree.SubElement(self.installdir, 'Merge',
                 Id=self._package_id(package.name), Language='1033',
                 SourceFile=path, DiskId='1')

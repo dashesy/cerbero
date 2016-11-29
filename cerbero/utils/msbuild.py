@@ -16,8 +16,13 @@
 # Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 # Boston, MA 02111-1307, USA.
 
-import _winreg as winreg
+try:
+    import _winreg as winreg
+except ImportError:
+    # noinspection PyUnresolvedReferences
+    import winreg
 import os
+import six
 
 from cerbero.config import Architecture
 from cerbero.utils import fix_winpath, shell
@@ -73,5 +78,5 @@ class MSBuild(object):
 
     def _format_properties(self):
         props = ['/property:%s=%s' % (k, v) for k, v in
-                 self.properties.iteritems()]
+                 six.iteritems(self.properties)]
         return ' '.join(props)

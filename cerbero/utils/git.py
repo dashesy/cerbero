@@ -17,7 +17,6 @@
 # Boston, MA 02111-1307, USA.
 
 import os
-import shutil
 
 from cerbero.config import Platform
 from cerbero.utils import shell
@@ -141,6 +140,7 @@ def submodules_update(git_dir, src_dir=None, fail=True):
     if src_dir:
         config = shell.check_call('%s config --file=.gitmodules --list' % GIT,
                                   git_dir)
+
         config_array = [s.split('=', 1) for s in config.split('\n')]
         for c in config_array:
             if c[0].startswith('submodule.') and c[0].endswith('.path'):
@@ -237,7 +237,7 @@ def check_line_endings(platform):
     if platform != Platform.WINDOWS:
         return True
     val = shell.check_call('git config --get core.autocrlf')
-    if ('false' in val.lower()):
+    if 'false' in val.lower():
         return True
     return False
 

@@ -18,5 +18,5 @@ class Recipe(recipe.Recipe):
 
     def prepare(self):
         if self.config.target_platform == Platform.WINDOWS:
-            self.configure_options += ' --enable-threads=win32'
+            self.configure_options += ' --enable-threads=windows'
             self.append_env['LDFLAGS'] = '-liconv'

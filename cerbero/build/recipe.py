@@ -21,6 +21,8 @@ import logging
 import shutil
 import tempfile
 import time
+import six
+from functools import reduce
 
 from cerbero.build import build, source
 from cerbero.build.filesprovider import FilesProvider
@@ -84,7 +86,7 @@ class BuildSteps(object):
                 BuildSteps.POST_INSTALL]
 
 
-class Recipe(FilesProvider):
+class Recipe(six.with_metaclass(MetaRecipe, FilesProvider)):
     '''
     Base class for recipes.
     A Recipe describes a module and the way it's built.
@@ -108,8 +110,6 @@ class Recipe(FilesProvider):
     @cvar runtime_dep: runtime dep common to all recipes
     @type runtime_dep: bool
     '''
-
-    __metaclass__ = MetaRecipe
 
     name = None
     licenses = []
@@ -262,8 +262,8 @@ class Recipe(FilesProvider):
     def _remove_steps(self, steps):
         self._steps = [x for x in self._steps if x not in steps]
 
-    def get_for_arch (self, arch, name):
-        return getattr (self, name)
+    def get_for_arch(self, arch, name):
+        return getattr(self, name)
 
 
 class MetaUniversalRecipe(type):
@@ -278,7 +278,7 @@ class MetaUniversalRecipe(type):
             setattr(cls, step, lambda self, name=step: step_func(self, name))
 
 
-class UniversalRecipe(object):
+class UniversalRecipe(six.with_metaclass(MetaUniversalRecipe, object)):
     '''
     Stores similar recipe objects that are going to be built together
 
@@ -286,8 +286,6 @@ class UniversalRecipe(object):
     to be built for different architectures before being merged. For the
     other targets, it will likely be a unitary group
     '''
-
-    __metaclass__ = MetaUniversalRecipe
 
     def __init__(self, config):
         self._config = config
@@ -334,9 +332,9 @@ class UniversalRecipe(object):
 
     def get_for_arch (self, arch, name):
         if arch:
-            return getattr (self._recipes[arch], name)
+            return getattr(self._recipes[arch], name)
         else:
-            return getattr (self, name)
+            return getattr(self, name)
 
     def _do_step(self, step):
         if step in BuildSteps.FETCH:
@@ -344,12 +342,12 @@ class UniversalRecipe(object):
             stepfunc = getattr(self._recipes.values()[0], step)
             try:
                 stepfunc()
-            except FatalError, e:
-                e.arch = arch
+            except FatalError as e:
+                e.arch = '?'
                 raise e
             return
 
-        for arch, recipe in self._recipes.iteritems():
+        for arch, recipe in six.iteritems(self._recipes):
             config = self._config.arch_config[arch]
             config.do_setup_env()
             stepfunc = getattr(recipe, step)
@@ -357,7 +355,7 @@ class UniversalRecipe(object):
             # Call the step function
             try:
                 stepfunc()
-            except FatalError, e:
+            except FatalError as e:
                 e.arch = arch
                 raise e
 
@@ -379,7 +377,7 @@ class UniversalFlatRecipe(UniversalRecipe):
 
     def merge(self):
         arch_inputs = {}
-        for arch, recipe in self._recipes.iteritems():
+        for arch, recipe in six.iteritems(self._recipes):
             # change the prefix temporarly to the arch prefix where files are
             # actually installed
             recipe.config.prefix = os.path.join(self.config.prefix, arch)
@@ -415,7 +413,7 @@ class UniversalFlatRecipe(UniversalRecipe):
 
         archs_prefix = self._recipes.keys()
 
-        for arch, recipe in self._recipes.iteritems():
+        for arch, recipe in six.iteritems(self._recipes):
             config = self._config.arch_config[arch]
             config.do_setup_env()
             stepfunc = getattr(recipe, step)

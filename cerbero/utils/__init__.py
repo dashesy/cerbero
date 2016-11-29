@@ -31,6 +31,7 @@ from distutils.version import StrictVersion
 import gettext
 import platform as pplatform
 import re
+import six
 
 from cerbero.enums import Platform, Architecture, Distro, DistroVersion
 from cerbero.errors import FatalError
@@ -314,10 +315,17 @@ def remove_list_duplicates(seq):
     return [x for x in seq if x not in seen and not seen_add(x)]
 
 
+def exec_file(filename, *args):
+    if six.PY3:
+        six.exec_(compile(open(filename, "rb").read(), filename, 'exec'), *args)
+    else:
+        execfile(filename, *args)
+
+
 def parse_file(filename, dict):
     try:
-        execfile(filename, dict)
-    except Exception, ex:
+        exec_file(filename, dict)
+    except Exception as ex:
         import traceback
         traceback.print_exc()
         raise ex
